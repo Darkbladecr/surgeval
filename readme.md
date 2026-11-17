@@ -6,3 +6,9 @@ A responsive webpage where a user is able to browse a catalog of different neuro
 2. Active help
 3. Passive help
 4. Supervise only
+
+![procedures](https://raw.githubusercontent.com/Darkbladecr/surgeval/refs/heads/main/screenshots/procedures.png)
+
+![case review](https://raw.githubusercontent.com/Darkbladecr/surgeval/refs/heads/main/screenshots/case_review.png)
+
+![case review 2](https://raw.githubusercontent.com/Darkbladecr/surgeval/refs/heads/main/screenshots/case_review2.png)
