@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<title>Surgical Case Recorder</title>
+<style>
+:root{--bg:#f2f2f6;--card:#fff;--card2:#e9e9ef;--tx:#17171a;--mut:#6d6d78;--ac:#5b6bff;--red:#e5484d;--yel:#f5a524;--blu:#5b6bff;--ln:#d9d9e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1b1d;--card:#2a2a2c;--card2:#353538;--tx:#f4f4f6;--mut:#9a9aa5;--ln:#3a3a3e;--ac:#6b7cff}}
+:root[data-theme="dark"]{--bg:#1b1b1d;--card:#2a2a2c;--card2:#353538;--tx:#f4f4f6;--mut:#9a9aa5;--ln:#3a3a3e;--ac:#6b7cff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;height:100%;display:flex;flex-direction:column;background:var(--bg)}
+main{flex:1;overflow-y:auto;padding:16px 18px 24px;position:relative}
+nav{display:flex;border-top:1px solid var(--ln);background:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;border:0;color:var(--mut);font-size:24px;padding:12px 0;cursor:pointer}
+nav button.on{color:var(--ac)}
+h1{font-size:30px;margin:6px 0 14px;font-weight:800}h2{font-size:17px;margin:20px 0 8px}
+.card{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}.sp{flex:1;min-width:0}.r{text-align:right}
+.mut{color:var(--mut);font-size:14px}.b{font-weight:600}
+input,select{width:100%;background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:12px;padding:12px;font:inherit}
+input[readonly]{opacity:.7}label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:12px;padding:13px 16px;font:600 16px inherit;font-family:inherit;cursor:pointer;width:100%}
+.btn.s{background:var(--card2);color:var(--ac)}.btn.d{background:var(--red)}
+.ib{background:none;border:1.5px solid var(--ac);color:var(--ac);width:36px;height:36px;border-radius:50%;cursor:pointer;flex:none}
+.xb{background:var(--red);color:#fff;border:0;width:24px;height:24px;border-radius:50%;cursor:pointer;flex:none;line-height:1}
+.chip{border:1px solid var(--ln);background:var(--card2);color:var(--tx);border-radius:20px;padding:8px 12px;cursor:pointer;font:inherit;font-size:14px}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ft{position:sticky;bottom:0;display:flex;gap:10px;padding:12px 0 0;background:linear-gradient(transparent,var(--bg) 30%)}
+.seg{display:flex;background:var(--card);border-radius:12px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);padding:8px;border-radius:10px;font:600 15px inherit;font-family:inherit;cursor:pointer}.seg .on{background:var(--ac);color:#fff}
+.li{cursor:pointer}.back{background:none;border:0;color:var(--mut);font-size:28px;cursor:pointer;padding:0}
+.ring{display:block;margin:20px auto;width:min(78vw,300px);height:auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.arc{transform-origin:150px 150px;animation:spin 3s linear infinite}
+.big{font:800 54px system-ui;fill:var(--tx);letter-spacing:1px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 4px;text-align:center;border-bottom:1px solid var(--ln)}td:last-child,th:last-child,td:nth-child(2),th:nth-child(2){text-align:left}
+.wrap{overflow-x:auto}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.bar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:var(--card2)}
+.modal{position:fixed;inset:0;background:#0009;display:flex;align-items:flex-end;justify-content:center;z-index:9}
+.sheet{background:var(--bg);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:70%;overflow:auto}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 16px;border-radius:20px;z-index:10;font-size:14px}
+li.dr{list-style:none;display:flex;gap:10px;align-items:center;margin-bottom:8px;background:var(--card);padding:6px 10px;border-radius:12px}
+li.dr input{border:0;background:none;padding:8px 4px}.grip{cursor:grab;color:var(--mut);letter-spacing:-2px;font-size:18px;line-height:.6;user-select:none}
+</style></head><body>
+<div id="app"><main id="m"></main>
+<nav><button data-t="watch" title="Stopwatch">⏱</button><button data-t="procs" title="Procedures">☰</button><button data-t="stats" title="Analytics">◔</button><button data-t="set" title="Settings">⚙</button></nav></div>
+<script>
+const G=['Show and tell','Active help','Passive help','Supervise only'],GC=['#6b7cff','#34c98e','#f5a524','#9a9aa5'];
+const CON=['Cranial: CSF Diversion/ETV-Other','Cranial: Epilepsy','Cranial: Functional Disorders','Cranial: Pain','Cranial: Trauma and Other','Cranial: Tumor - General','Cranial: Tumor - Sellar/Parasellar','Cranial: Vascular, Endovascular Procedure','Cranial: Vascular, Open Procedure','Critical Care','Nerve: Peripheral','Pediatric: Cranial CSF Diversion/ETV-Other','Pediatric: Cranial Trauma/Other (non-tumor)','Pediatric: Cranial Tumor','Pediatric: Spinal (dysraphism, tether, deformity, tumor, trauma)','Peripheral Device Management (PDM)','Radiosurgery','Spinal: Anterior Cervical (decompression, stabilization, other)','Spinal: Lumbar Laminectomy/Laminotomy (disc, stenoisis, other)','Spinal: Posterior Cervical (decompression, stabilization, other)','Spinal: Stimulation/Lesion/Pump/Other','Spinal: Thoracic, Lumbar, or Sacral Instrumentation, Fusion, Other','Other'];
+const PPL=['Dr. Alice Chen','Dr. Raj Patel','Dr. Maria Lopez','Dr. Tom Weber'],ME='Dr. Sam Rivera';
+const mk=(id,name,c,cpt,s)=>({id,name,concept:CON[c],cpt,steps:s.map(x=>({n:x[0],avg:x[1]}))});
+let P=[mk(1,'Anterior Cervical Discectomy and Fusion (ACDF)',17,'22551',[['Localization',10],['Access',20],['Exposure',15],['Laminectomy',15],['Flavectomy',10],['Discectomy',15],['Closure',20]]),
+mk(2,'Lumbar Laminectomy',18,'63047',[['Positioning',10],['Exposure',20],['Laminectomy',30],['Decompression',25],['Closure',15]]),
+mk(3,'Craniotomy for Tumor Resection',5,'61510',[['Positioning',15],['Craniotomy',30],['Dural opening',10],['Resection',90],['Closure',30]]),
+mk(4,'EVD Placement',0,'61107',[['Landmarking',5],['Burr hole',10],['Catheter placement',10],['Tunneling',10],['Closure',5]])];
+const S=s=>s*1000,dT=n=>new Date(Date.now()-n*864e5);
+const seedSteps=(a)=>P[0].steps.map((s,i)=>({title:s.n,op:S(a[i][0]),pause:S(a[i][1]),grade:a[i][2]}));
+let C=[{id:1,pid:1,name:P[0].name,concept:P[0].concept,cpt:'22551',date:dT(3),att:PPL[0],sr:ME,jr:null,steps:seedSteps([[43,0,3],[12,0,3],[24,0,2],[15,0,2],[10,240,1],[15,0,0],[20,0,3]])},
+{id:2,pid:1,name:P[0].name,concept:P[0].concept,cpt:'22551',date:dT(12),att:PPL[1],sr:PPL[2],jr:ME,steps:seedSteps([[50,10,1],[20,0,1],[30,0,0],[22,0,2],[14,30,1],[18,0,1],[25,0,3]])}];
+let V={t:'watch',p:'list',a:null},A=null,NC=null,NP=null,q='',cf='All concepts',pv='list',sq='';
+const $=s=>document.querySelector(s),m=$('#m');
+const f2=n=>String(n).padStart(2,'0'),mmss=ms=>{let s=Math.floor(ms/1000);return f2(Math.floor(s/60))+':'+f2(s%60)};
+const hhmm=ms=>{let mi=Math.round(ms/6e4);return f2(Math.floor(mi/60))+':'+f2(mi%60)};
+const fd=d=>f2(d.getMonth()+1)+'/'+f2(d.getDate())+'/'+f2(d.getFullYear()%100);
+const iso=d=>d.getFullYear()+'-'+f2(d.getMonth()+1)+'-'+f2(d.getDate());
+const avgT=m=>m>=60?Math.floor(m/60)+'h'+(m%60?f2(m%60):''):m+' min';
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pn=x=>x||'None';
+function go(t,p='list',a=null){V={t,p,a};render()}
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
+function render(){
+ document.querySelectorAll('nav button').forEach(b=>{b.className=b.dataset.t==V.t?'on':'';b.onclick=()=>go(b.dataset.t)});
+ let t=V.t;
+ if(t=='watch')return A?watch():(V={t:'procs',p:'list'},render());
+ if(t=='procs')return({list:procs,new:newCase,review:review,create:create}[V.p])();
+ if(t=='stats')return V.p=='concept'?concept():stats();
+ settings();
+}
+/* STOPWATCH */
+function watch(){
+ const st=A.steps[A.i],ps=A.proc.steps,tot=ps.reduce((a,s)=>a+s.avg,0);
+ m.innerHTML=`<div class="row"><h1 class="sp" style="font-size:22px">${E(A.proc.name)}</h1><div class="b" id="tt">${mmss(A.steps.reduce((a,s)=>a+s.op+s.pause,0))}</div></div>
+ <div class="card"><div class="row"><div class="sp b">${E(ps[A.i].n)}</div><div class="b">${A.i+1}/${ps.length}</div></div>
+ <div class="row mut"><div class="sp">Avg ${avgT(ps[A.i].avg)}</div><div>Avg total ${avgT(tot)}</div></div></div>
+ <svg class="ring" viewBox="0 0 300 300"><circle cx="150" cy="150" r="125" fill="none" stroke="var(--card2)" stroke-width="14"/>
+ <circle class="arc" id="arc" cx="150" cy="150" r="125" fill="none" stroke="var(--ac)" stroke-width="14" stroke-linecap="round" stroke-dasharray="200 586" style="animation-play-state:${A.run?'running':'paused'}"/>
+ <text id="tm" class="big" x="150" y="170" text-anchor="middle">${mmss(st.op)}</text></svg>
+ <div class="row" style="margin-bottom:16px"><button class="btn s" onclick="pauseT()">${A.run?'Pause':'Resume'}</button><button class="btn" onclick="nextS()">Next</button></div>
+ <div class="mut" style="text-align:center;margin-bottom:8px">Your involvement in this step</div>
+ <div class="chips">${G.map((g,i)=>`<button class="chip ${st.grade===i?'on':''}" onclick="A.steps[A.i].grade=${i};watch()">${g}</button>`).join('')}</div>`;
+}
+function pauseT(){A.run=!A.run;watch()}
+function nextS(){
+ if(A.steps[A.i].grade==null)return toast('Select your involvement grade first');
+ if(A.i<A.proc.steps.length-1){A.i++;return watch()}
+ const c={id:Date.now(),pid:A.proc.id,name:A.proc.name,concept:A.proc.concept,cpt:A.proc.cpt,date:A.date,att:A.att,sr:A.sr,jr:A.jr,steps:A.steps.map((s,i)=>({title:A.proc.steps[i].n,op:s.op,pause:s.pause,grade:s.grade}))};
+ C.unshift(c);A=null;go('procs','review',c.id);
+}
+setInterval(()=>{if(!A)return;const n=Date.now(),d=n-A.last;A.last=n;const s=A.steps[A.i];A.run?s.op+=d:s.pause+=d;
+ if(V.t=='watch'){const a=$('#tm'),b=$('#tt');if(a)a.textContent=mmss(s.op);if(b)b.textContent=mmss(A.steps.reduce((x,y)=>x+y.op+y.pause,0))}},200);
+/* PROCEDURES */
+function lastPerf(id){const c=C.filter(x=>x.pid==id).sort((a,b)=>b.date-a.date)[0];return c?fd(c.date):'never'}
+function procs(){
+ m.innerHTML=`<h1>${pv=='list'?'Procedures':'Cases'}</h1><div class="seg"><button class="${pv=='list'?'on':''}" onclick="pv='list';procs()">Catalog</button><button class="${pv=='cases'?'on':''}" onclick="pv='cases';procs()">Completed</button></div><div id="pl"></div>`;
+ if(pv=='cases'){
+  $('#pl').innerHTML=(C.length?[...C].sort((a,b)=>b.date-a.date).map(c=>`<div class="card li row" onclick="go('procs','review',${c.id})"><div class="sp"><div class="b">${E(c.name)}</div><div class="mut">CPT: ${c.cpt}</div></div><div class="mut">${fd(c.date)}</div></div>`).join(''):'<p class="mut">No completed cases yet.</p>')+
+  `<div class="ft"><button class="btn s" onclick="go('procs','create')">Create procedure</button><button class="btn" onclick="NC={};go('procs','new')">+ Add new case</button></div>`;return}
+ m.insertAdjacentHTML('beforeend','');
+ $('#pl').innerHTML=`<input id="qs" placeholder="Search procedures" value="${E(q)}" oninput="q=this.value;fl()" style="margin-bottom:10px"><select id="cs" onchange="cf=this.value;fl()" style="margin-bottom:12px"><option>All concepts</option>${CON.map(c=>`<option ${c==cf?'selected':''}>${E(c)}</option>`).join('')}</select><div id="fl"></div>`;fl();
+}
+function fl(){
+ const r=P.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())&&(cf=='All concepts'||p.concept==cf));
+ $('#fl').innerHTML=r.length?r.map(p=>`<div class="card row"><div class="sp"><div class="b">${E(p.name)}</div><div class="mut">${E(p.concept)} - last performed ${lastPerf(p.id)}</div></div><button class="ib" onclick="NC={pid:${p.id}};go('procs','new')" title="New case">▶</button></div>`).join(''):'<p class="mut">No matching procedures.</p>';
+}
+function newCase(){
+ NC.date=NC.date||iso(new Date());NC.att=NC.att||'';NC.sr=NC.sr||'';NC.jr=NC.jr||'';
+ const p=P.find(x=>x.id==NC.pid);
+ const dl=(id,a)=>`<datalist id="${id}">${a.map(x=>`<option value="${E(x)}">`).join('')}</datalist>`;
+ m.innerHTML=`<div class="row"><button class="back" onclick="go('procs')">‹</button></div><h1>New case</h1>
+ <label>Procedure</label><input list="dp" id="np" value="${p?E(p.name):''}" placeholder="Select procedure" oninput="nc()">${dl('dp',P.map(x=>x.name))}
+ <label>Date</label><input type="date" id="nd" value="${NC.date}" oninput="NC.date=this.value">
+ <label>Attending</label><input list="du" id="na" value="${E(NC.att)}" placeholder="Select attending" oninput="NC.att=this.value">${dl('du',PPL.concat(ME))}
+ <label>Senior resident</label><div class="row"><input list="du" id="ns" value="${E(NC.sr)}" oninput="NC.sr=this.value"><button class="chip" onclick="$('#ns').value=NC.sr=ME">(me)</button></div>
+ <label>Junior resident</label><div class="row"><button class="chip" onclick="$('#nj').value=NC.jr=''">(none)</button><input list="du" id="nj" value="${E(NC.jr)}" oninput="NC.jr=this.value"><button class="chip" onclick="$('#nj').value=NC.jr=ME">(me)</button></div>
+ <label>CPT code</label><input id="nx" readonly value="${p?p.cpt:''}">
+ <div class="ft"><button class="btn" onclick="startC()">Start case</button></div>`;
+}
+function nc(){const p=P.find(x=>x.name==$('#np').value);NC.pid=p?p.id:null;$('#nx').value=p?p.cpt:''}
+function startC(){
+ const p=P.find(x=>x.id==NC.pid);if(!p)return toast('Select a procedure');
+ const [y,mo,d]=NC.date.split('-').map(Number);
+ A={proc:p,i:0,run:true,last:Date.now(),date:new Date(y,mo-1,d),att:NC.att||'Unassigned',sr:NC.sr||'Unassigned',jr:NC.jr||null,steps:p.steps.map(()=>({op:0,pause:0,grade:null}))};
+ go('watch');
+}
+/* REVIEW */
+function pie(c){
+ const t=G.map((_,g)=>c.steps.filter(s=>s.grade===g).reduce((a,s)=>a+s.op+s.pause,0)),sum=t.reduce((a,b)=>a+b,0)||1;let a0=-Math.PI/2,h='';
+ t.forEach((v,i)=>{if(!v)return;const a1=a0+v/sum*2*Math.PI,x=k=>(100+90*Math.cos(k)).toFixed(1),y=k=>(100+90*Math.sin(k)).toFixed(1);
+  h+=v/sum>.999?`<circle cx="100" cy="100" r="90" fill="${GC[i]}"/>`:`<path d="M100 100L${x(a0)} ${y(a0)}A90 90 0 ${v/sum>.5?1:0} 1 ${x(a1)} ${y(a1)}Z" fill="${GC[i]}"/>`;a0=a1});
+ return `<div class="row" style="flex-wrap:wrap;justify-content:center"><svg viewBox="0 0 200 200" width="190">${h}</svg><div>${G.map((g,i)=>`<div class="mut"><span class="dot" style="background:${GC[i]}"></span>${g} · ${Math.round(t[i]/sum*100)}%</div>`).join('')}</div></div>`;
+}
+function review(){
+ const c=C.find(x=>x.id==V.a),tot=c.steps.reduce((a,s)=>a+s.op+s.pause,0),mx=Math.max(...c.steps.map(s=>s.op+s.pause),1);
+ const pk=(r,l)=>`<div class="row li" style="padding:8px 0;border-bottom:1px solid var(--ln)" onclick="pick('${r}')"><span class="mut sp">${l}</span><span class="b">${E(pn(c[r]))} ›</span></div>`;
+ m.innerHTML=`<div class="row"><button class="back" onclick="go('procs')">‹</button></div><h1 style="font-size:24px">Case Report - ${E(c.name)}</h1>
+ <div class="card"><div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln)"><span class="mut sp">Date</span><span class="b">${fd(c.date)}</span></div>${pk('att','Attending')}${pk('sr','Senior resident')}${pk('jr','Junior resident')}
+ <div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln)"><span class="mut sp">CPT code</span><span class="b">${c.cpt}</span></div><div class="row" style="padding:8px 0"><span class="mut sp">Total time</span><span class="b">${hhmm(tot)}</span></div></div>
+ <h2>Time by involvement</h2><div class="card">${pie(c)}</div>
+ <h2>Time per step</h2><div class="card">${c.steps.map(s=>`<div class="mut" style="font-size:12px">${E(s.title)}</div><div class="bar" style="width:${(s.op+s.pause)/mx*100}%;min-width:4px;margin-bottom:6px"><div style="flex:${s.op};background:var(--blu)"></div><div style="flex:${s.pause};background:var(--yel)"></div></div>`).join('')}
+ <div class="mut" style="font-size:13px"><span class="dot" style="background:var(--blu)"></span>Operating <span class="dot" style="background:var(--yel);margin-left:10px"></span>Paused · longest bar = ${mmss(mx)}</div></div>
+ <h2>Step details</h2><div class="card wrap"><table><tr><th>#</th><th>Title</th><th>Op time</th><th>Pause</th><th>Stage</th></tr>${c.steps.map((s,i)=>`<tr><td>${i+1}</td><td>${E(s.title)}</td><td>${mmss(s.op)}</td><td>${s.pause?mmss(s.pause):'-'}</td><td>${G[s.grade]}</td></tr>`).join('')}</table></div>`;
+}
+function pick(r){
+ const c=C.find(x=>x.id==V.a);
+ const base=r=='att'?PPL.concat(ME):r=='sr'?[ME+' (current user)'].concat(PPL):['None',ME+' (current user)'].concat(PPL);
+ const o=document.createElement('div');o.className='modal';
+ o.innerHTML=`<div class="sheet"><input id="pq" placeholder="Search user" autofocus><div id="po" style="margin-top:8px"></div></div>`;
+ o.onclick=e=>{if(e.target==o)o.remove()};document.body.appendChild(o);
+ const sh=()=>{const k=$('#pq').value.toLowerCase();$('#po').innerHTML=base.filter(x=>x.toLowerCase().includes(k)).map((x,i)=>`<div class="card li" data-v="${E(x)}">${E(x)}</div>`).join('');
+  document.querySelectorAll('#po .li').forEach(e=>e.onclick=()=>{let v=e.dataset.v;v=v=='None'?null:v.replace(' (current user)','');c[r]=v;o.remove();review()})};
+ $('#pq').oninput=sh;sh();
+}
+/* CREATE */
+function create(){
+ NP=NP||{name:'',concept:'',steps:['']};
+ m.innerHTML=`<div class="row"><button class="back" onclick="NP=null;go('procs')">‹</button></div><h1>New Procedure</h1>
+ <div class="card"><input placeholder="Procedure name" value="${E(NP.name)}" oninput="NP.name=this.value" style="border:0;background:none"></div>
+ <div class="card"><input list="dc" placeholder="Procedure concept (i.e. Anterior Cervical)" value="${E(NP.concept)}" oninput="NP.concept=this.value" style="border:0;background:none"><datalist id="dc">${CON.map(c=>`<option value="${E(c)}">`).join('')}</datalist></div>
+ <h2>Steps</h2><ul id="sl" style="padding:0;margin:0">${NP.steps.map((s,i)=>`<li class="dr" draggable="true" data-i="${i}"><span class="grip">⋮⋮</span><input placeholder="Step name" value="${E(s)}" oninput="NP.steps[${i}]=this.value"><button class="xb" onclick="NP.steps.splice(${i},1);if(!NP.steps.length)NP.steps=[''];create()">×</button></li>`).join('')}</ul>
+ <button class="btn s" onclick="NP.steps.push('');create()">+ Add step</button>
+ <div class="ft"><button class="btn" onclick="saveP()">Save procedure</button></div>`;
+ let d=null;document.querySelectorAll('#sl li').forEach(l=>{l.ondragstart=()=>d=+l.dataset.i;l.ondragover=e=>e.preventDefault();
+  l.ondrop=e=>{e.preventDefault();const t=+l.dataset.i;if(d==null||d==t)return;const[x]=NP.steps.splice(d,1);NP.steps.splice(t,0,x);create()}});
+}
+function saveP(){
+ const st=NP.steps.map(s=>s.trim()).filter(Boolean);
+ if(!NP.name.trim()||!st.length)return toast('Add a name and at least one step');
+ P.push({id:Date.now(),name:NP.name.trim(),concept:CON.includes(NP.concept)?NP.concept:'Other',cpt:String(10000+Math.floor(Math.random()*89999)),steps:st.map(n=>({n,avg:15}))});
+ NP=null;pv='list';go('procs');toast('Procedure saved');
+}
+/* ANALYTICS */
+function stats(){
+ m.innerHTML=`<h1>Analytics</h1><input placeholder="Search concepts" value="${E(sq)}" oninput="sq=this.value;sl()" style="margin-bottom:12px"><div id="cl"></div>`;sl();
+}
+function sl(){$('#cl').innerHTML=CON.filter(c=>c.toLowerCase().includes(sq.toLowerCase())).map(c=>`<div class="card li row" data-c="${E(c)}"><div class="sp">${E(c)}</div><span class="mut">${C.filter(x=>x.concept==c).length} cases ›</span></div>`).join('');
+ document.querySelectorAll('#cl .li').forEach(e=>e.onclick=()=>go('stats','concept',e.dataset.c))}
+function concept(){
+ const cs=C.filter(c=>c.concept==V.a),map={};
+ cs.forEach(c=>c.steps.forEach(s=>{const k=c.name+' · '+s.title;(map[k]=map[k]||[0,0,0,0])[s.grade]+=s.op+s.pause}));
+ const ks=Object.keys(map);
+ m.innerHTML=`<div class="row"><button class="back" onclick="go('stats')">‹</button></div><h1 style="font-size:22px">${E(V.a)}</h1>`+
+ (ks.length?`<div class="card">${ks.map(k=>{const v=map[k],s=v.reduce((a,b)=>a+b,0)||1;return `<div class="mut" style="font-size:12px">${E(k)}</div><div class="bar" style="margin-bottom:8px">${v.map((x,i)=>`<div title="${G[i]} ${Math.round(x/s*100)}%" style="width:${x/s*100}%;background:${GC[i]}"></div>`).join('')}</div>`}).join('')}
+ <div class="row mut" style="font-size:12px;justify-content:space-between"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+ <div class="chips">${G.map((g,i)=>`<span class="mut"><span class="dot" style="background:${GC[i]}"></span>${g}</span>`).join('')}</div>`:'<p class="mut">No completed cases in this concept yet.</p>');
+}
+/* SETTINGS */
+function settings(){
+ m.innerHTML=`<h1>Settings</h1><h2>Change password</h2><label>Current password</label><input type="password" autocomplete="current-password"><label>New password</label><input type="password" autocomplete="new-password"><label>Confirm new password</label><input type="password" id="cp" autocomplete="new-password">
+ <div style="margin-top:16px"><button class="btn" onclick="toast('Demo only: password not changed')">Update password</button></div>
+ <div style="margin-top:28px"><button class="btn d" onclick="A=null;toast('Signed out (demo)');go('procs')">Sign out</button></div>`;
+}
+render();
+</script></body></html>
